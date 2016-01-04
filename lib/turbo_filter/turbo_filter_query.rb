@@ -46,7 +46,7 @@ class TurboFilterQuery
 
   # Returns a hash of localized labels for all filter operators
   def self.operators_labels
-    operators.inject({}) {|h, operator| h[operator.first] = *operator.last; h}
+    operators.inject({}) {|h, operator| h[operator.first] = I18n.t(*operator.last); h}
   end
 
   def initialize(filters_for_class=nil)
@@ -71,7 +71,7 @@ class TurboFilterQuery
         when :integer
           if association_foreign_keys.include?(col.name)
             association_class = associations.select { |a| a.foreign_key == col.name }.first.class_name.constantize
-            association_values = association_class.all.collect{|s| [s.try(:name), s.id.to_s] }
+            association_values = association_class.all.collect{|s| [s.to_s, s.id.to_s] }
             add_available_filter col.name, :type => :list, :values => association_values
           else
             add_available_filter col.name, :type => :integer
@@ -103,7 +103,7 @@ class TurboFilterQuery
     unless @available_filters
       initialize_available_filters
       @available_filters.to_a.each do |field, options|
-        options[:name] ||= options[:label] || "field_#{field}".gsub(/_id$/, '')
+        options[:name] ||= I18n.t("field_#{field}".gsub(/_id$/, ''))
       end
     end
     @available_filters

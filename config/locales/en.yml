@@ -1,0 +1,32 @@
+en:
+  label_day_plural: Days
+  label_filter_add: Add Filter
+  label_filter_plural: Filters
+  label_equals: is
+  label_not_equals: is not
+  label_in_less_than: in less than
+  label_in_more_than: in more than
+  label_in_the_next_days: in the next
+  label_in_the_past_days: in the past
+  label_greater_or_equal: '>='
+  label_less_or_equal: '<='
+  label_between: between
+  label_in: in
+  label_today: today
+  label_all_time: all time
+  label_yesterday: yesterday
+  label_this_week: this week
+  label_last_week: last week
+  label_last_n_weeks: "last %{count} weeks"
+  label_last_n_days: "last %{count} days"
+  label_this_month: this month
+  label_last_month: last month
+  label_this_year: this year
+  label_date_range: Date range
+  label_less_than_ago: less than days ago
+  label_more_than_ago: more than days ago
+  label_ago: days ago
+  label_contains: contains
+  label_not_contains: doesn't contain
+  label_any: any
+  label_none: none
