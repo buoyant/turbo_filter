@@ -287,7 +287,7 @@ function toggleMultiSelect(el) {
 }
 
 function submit_query_form(id) {
-  selectAllOptions("selected_columns");
+  // selectAllOptions("selected_columns");
   $('#'+id).submit();
 }
 
@@ -388,133 +388,6 @@ function submitPreview(url, form, target) {
     success: function(data){
       $('#'+target).html(data);
     }
-  });
-}
-
-function collapseScmEntry(id) {
-  $('.'+id).each(function() {
-    if ($(this).hasClass('open')) {
-      collapseScmEntry($(this).attr('id'));
-    }
-    $(this).hide();
-  });
-  $('#'+id).removeClass('open');
-}
-
-function expandScmEntry(id) {
-  $('.'+id).each(function() {
-    $(this).show();
-    if ($(this).hasClass('loaded') && !$(this).hasClass('collapsed')) {
-      expandScmEntry($(this).attr('id'));
-    }
-  });
-  $('#'+id).addClass('open');
-}
-
-function scmEntryClick(id, url) {
-    var el = $('#'+id);
-    if (el.hasClass('open')) {
-        collapseScmEntry(id);
-        el.addClass('collapsed');
-        return false;
-    } else if (el.hasClass('loaded')) {
-        expandScmEntry(id);
-        el.removeClass('collapsed');
-        return false;
-    }
-    if (el.hasClass('loading')) {
-        return false;
-    }
-    el.addClass('loading');
-    $.ajax({
-      url: url,
-      success: function(data) {
-        el.after(data);
-        el.addClass('open').addClass('loaded').removeClass('loading');
-      }
-    });
-    return true;
-}
-
-function randomKey(size) {
-  var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-  var key = '';
-  for (var i = 0; i < size; i++) {
-    key += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return key;
-}
-
-function updateIssueFrom(url) {
-  $('#all_attributes input, #all_attributes textarea, #all_attributes select').each(function(){
-    $(this).data('valuebeforeupdate', $(this).val());
-  });
-  $.ajax({
-    url: url,
-    type: 'post',
-    data: $('#issue-form').serialize()
-  });
-}
-
-function replaceIssueFormWith(html){
-  var replacement = $(html);
-  $('#all_attributes input, #all_attributes textarea, #all_attributes select').each(function(){
-    var object_id = $(this).attr('id');
-    if (object_id && $(this).data('valuebeforeupdate')!=$(this).val()) {
-      replacement.find('#'+object_id).val($(this).val());
-    }
-  });
-  $('#all_attributes').empty();
-  $('#all_attributes').prepend(replacement);
-}
-
-function updateBulkEditFrom(url) {
-  $.ajax({
-    url: url,
-    type: 'post',
-    data: $('#bulk_edit_form').serialize()
-  });
-}
-
-function observeAutocompleteField(fieldId, url, options) {
-  $(document).ready(function() {
-    $('#'+fieldId).autocomplete($.extend({
-      source: url,
-      minLength: 2,
-      search: function(){$('#'+fieldId).addClass('ajax-loading');},
-      response: function(){$('#'+fieldId).removeClass('ajax-loading');}
-    }, options));
-    $('#'+fieldId).addClass('autocomplete');
-  });
-}
-
-function observeSearchfield(fieldId, targetId, url) {
-  $('#'+fieldId).each(function() {
-    var $this = $(this);
-    $this.addClass('autocomplete');
-    $this.attr('data-value-was', $this.val());
-    var check = function() {
-      var val = $this.val();
-      if ($this.attr('data-value-was') != val){
-        $this.attr('data-value-was', val);
-        $.ajax({
-          url: url,
-          type: 'get',
-          data: {q: $this.val()},
-          success: function(data){ if(targetId) $('#'+targetId).html(data); },
-          beforeSend: function(){ $this.addClass('ajax-loading'); },
-          complete: function(){ $this.removeClass('ajax-loading'); }
-        });
-      }
-    };
-    var reset = function() {
-      if (timer) {
-        clearInterval(timer);
-        timer = setInterval(check, 300);
-      }
-    };
-    var timer = setInterval(check, 300);
-    $this.bind('keyup click mousemove', reset);
   });
 }
 

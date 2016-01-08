@@ -1,8 +1,7 @@
+module TurboFilter
 class TurboFilterQuery
-  def self.included(base)
-    base.extend ClassMethods
-  end
 
+    class_attribute :filters
     class_attribute :operators
     self.operators = {
       "="   => :label_equals,
@@ -49,8 +48,9 @@ class TurboFilterQuery
     operators.inject({}) {|h, operator| h[operator.first] = I18n.t(*operator.last); h}
   end
 
-  def initialize(filters_for_class=nil)
+  def initialize(filters_for_class=nil,filters={})
     @filters_for_class = filters_for_class
+    self.filters = filters
   end
 
   # Adds available filters
@@ -172,8 +172,25 @@ class TurboFilterQuery
     json
   end
 
+  def statement
+    # filters clauses
+    filters_clauses = []
+    filters.each_key do |field|
+      v = values_for(field).clone
+      next unless v and !v.empty?
+      operator = operator_for(field)
+
+      filters_clauses << '(' + sql_for_field(field, operator, v, @filters_for_class.table_name, field) + ')'
+    end if filters
+
+    filters_clauses.reject!(&:blank?)
+
+    filters_clauses.any? ? filters_clauses.join(' AND ') : nil
+  end
+
+
   # Helper method to generate the WHERE sql for a +field+, +operator+ and a +value+
-  def sql_for_field(field, operator, value, db_table, db_field, is_custom_filter=false)
+  def sql_for_field(field, operator, value, db_table, db_field)
     sql = ''
     case operator
     when "="
@@ -182,19 +199,11 @@ class TurboFilterQuery
         when :date, :date_past
           sql = date_clause(db_table, db_field, parse_date(value.first), parse_date(value.first))
         when :integer
-          if is_custom_filter
-            sql = "(#{db_table}.#{db_field} <> '' AND CAST(CASE #{db_table}.#{db_field} WHEN '' THEN '0' ELSE #{db_table}.#{db_field} END AS decimal(30,3)) = #{value.first.to_i})"
-          else
-            sql = "#{db_table}.#{db_field} = #{value.first.to_i}"
-          end
+          sql = "#{db_table}.#{db_field} = #{value.first.to_i}"
         when :float
-          if is_custom_filter
-            sql = "(#{db_table}.#{db_field} <> '' AND CAST(CASE #{db_table}.#{db_field} WHEN '' THEN '0' ELSE #{db_table}.#{db_field} END AS decimal(30,3)) BETWEEN #{value.first.to_f - 1e-5} AND #{value.first.to_f + 1e-5})"
-          else
-            sql = "#{db_table}.#{db_field} BETWEEN #{value.first.to_f - 1e-5} AND #{value.first.to_f + 1e-5}"
-          end
+          sql = "#{db_table}.#{db_field} BETWEEN #{value.first.to_f - 1e-5} AND #{value.first.to_f + 1e-5}"
         else
-          sql = "#{db_table}.#{db_field} IN (" + value.collect{|val| "'#{connection.quote_string(val)}'"}.join(",") + ")"
+          sql = "#{db_table}.#{db_field} IN (" + value.collect{|val| "'#{@filters_for_class.connection.quote_string(val)}'"}.join(",") + ")"
         end
       else
         # IN an empty set
@@ -202,46 +211,32 @@ class TurboFilterQuery
       end
     when "!"
       if value.any?
-        sql = "(#{db_table}.#{db_field} IS NULL OR #{db_table}.#{db_field} NOT IN (" + value.collect{|val| "'#{connection.quote_string(val)}'"}.join(",") + "))"
+        sql = "(#{db_table}.#{db_field} IS NULL OR #{db_table}.#{db_field} NOT IN (" + value.collect{|val| "'#{@filters_for_class.connection.quote_string(val)}'"}.join(",") + "))"
       else
         # NOT IN an empty set
         sql = "1=1"
       end
     when "!*"
       sql = "#{db_table}.#{db_field} IS NULL"
-      sql << " OR #{db_table}.#{db_field} = ''" if is_custom_filter
     when "*"
       sql = "#{db_table}.#{db_field} IS NOT NULL"
-      sql << " AND #{db_table}.#{db_field} <> ''" if is_custom_filter
     when ">="
       if [:date, :date_past].include?(type_for(field))
         sql = date_clause(db_table, db_field, parse_date(value.first), nil)
       else
-        if is_custom_filter
-          sql = "(#{db_table}.#{db_field} <> '' AND CAST(CASE #{db_table}.#{db_field} WHEN '' THEN '0' ELSE #{db_table}.#{db_field} END AS decimal(30,3)) >= #{value.first.to_f})"
-        else
-          sql = "#{db_table}.#{db_field} >= #{value.first.to_f}"
-        end
+        sql = "#{db_table}.#{db_field} >= #{value.first.to_f}"
       end
     when "<="
       if [:date, :date_past].include?(type_for(field))
         sql = date_clause(db_table, db_field, nil, parse_date(value.first))
       else
-        if is_custom_filter
-          sql = "(#{db_table}.#{db_field} <> '' AND CAST(CASE #{db_table}.#{db_field} WHEN '' THEN '0' ELSE #{db_table}.#{db_field} END AS decimal(30,3)) <= #{value.first.to_f})"
-        else
-          sql = "#{db_table}.#{db_field} <= #{value.first.to_f}"
-        end
+        sql = "#{db_table}.#{db_field} <= #{value.first.to_f}"
       end
     when "><"
       if [:date, :date_past].include?(type_for(field))
         sql = date_clause(db_table, db_field, parse_date(value[0]), parse_date(value[1]))
       else
-        if is_custom_filter
-          sql = "(#{db_table}.#{db_field} <> '' AND CAST(CASE #{db_table}.#{db_field} WHEN '' THEN '0' ELSE #{db_table}.#{db_field} END AS decimal(30,3)) BETWEEN #{value[0].to_f} AND #{value[1].to_f})"
-        else
-          sql = "#{db_table}.#{db_field} BETWEEN #{value[0].to_f} AND #{value[1].to_f}"
-        end
+        sql = "#{db_table}.#{db_field} BETWEEN #{value[0].to_f} AND #{value[1].to_f}"
       end
     when "><t-"
       # between today - n days and today
@@ -304,9 +299,9 @@ class TurboFilterQuery
       date = Date.today
       sql = date_clause(db_table, db_field, date.beginning_of_year, date.end_of_year)
     when "~"
-      sql = "LOWER(#{db_table}.#{db_field}) LIKE '%#{connection.quote_string(value.first.to_s.downcase)}%'"
+      sql = "LOWER(#{db_table}.#{db_field}) LIKE '%#{@filters_for_class.connection.quote_string(value.first.to_s.downcase)}%'"
     when "!~"
-      sql = "LOWER(#{db_table}.#{db_field}) NOT LIKE '%#{connection.quote_string(value.first.to_s.downcase)}%'"
+      sql = "LOWER(#{db_table}.#{db_field}) NOT LIKE '%#{@filters_for_class.connection.quote_string(value.first.to_s.downcase)}%'"
     else
       raise "Unknown query operator #{operator}"
     end
@@ -326,7 +321,7 @@ class TurboFilterQuery
       if self.class.default_timezone == :utc
         from = from.utc
       end
-      s << ("#{table}.#{field} > '%s'" % [connection.quoted_date(from)])
+      s << ("#{table}.#{field} > '%s'" % [@filters_for_class.connection.quoted_date(from)])
     end
     if to
       if to.is_a?(Date)
@@ -335,7 +330,7 @@ class TurboFilterQuery
       if self.class.default_timezone == :utc
         to = to.utc
       end
-      s << ("#{table}.#{field} <= '%s'" % [connection.quoted_date(to)])
+      s << ("#{table}.#{field} <= '%s'" % [@filters_for_class.connection.quoted_date(to)])
     end
     s.join(' AND ')
   end
@@ -354,4 +349,5 @@ class TurboFilterQuery
     end
   end
 
+end
 end

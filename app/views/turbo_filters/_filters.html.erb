@@ -1,12 +1,18 @@
 <script type="text/javascript">
-var operatorLabels = <%= raw_json TurboFilterQuery.operators_labels %>;
-var operatorByType = <%= raw_json TurboFilterQuery.operators_by_filter_type %>;
+var operatorLabels = <%= raw_json TurboFilter::TurboFilterQuery.operators_labels %>;
+var operatorByType = <%= raw_json TurboFilter::TurboFilterQuery.operators_by_filter_type %>;
 var availableFilters = <%= raw_json query.available_filters_as_json %>;
 var labelDayPlural = <%= raw_json t(:label_day_plural) %>;
-$(document).ready(function(){
+$(document).on('ready page:load', function () {
   initFilters();
+  <% query.filters.each do |field, options| %>
+  addFilter("<%= field %>", <%= raw_json query.operator_for(field) %>, <%= raw_json query.values_for(field) %>);
+  <% end %>
 });
 </script>
+<h2>Turbo Filters</h2>
+<%= form_tag({ :controller => 'assets', :action => 'index' },
+            :method => :get, :id => 'query_form') do %>
 <table style="width:100%">
   <tr>
     <td>
@@ -19,3 +25,7 @@ $(document).ready(function(){
   </tr>
 </table>
 <%= hidden_field_tag 'f[]', '' %>
+<%= link_to_function t(:apply), 'submit_query_form("query_form")', :class => 'btn btn-primary' %>
+<%= link_to t(:clear), { :set_filter => 1 }, "data-no-turbolink" => true, :class => 'btn'  %>
+<% end -%>
+<hr>
