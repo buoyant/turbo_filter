@@ -11,7 +11,7 @@ $(document).on('ready page:load', function () {
 });
 </script>
 <h2>Turbo Filters</h2>
-<%= form_tag({ :controller => 'assets', :action => 'index' },
+<%= form_tag({ :controller => @query.instance_values["filters_for_class"].to_s.pluralize.downcase, :action => 'index' },
             :method => :get, :id => 'query_form') do %>
 <table style="width:100%">
   <tr>

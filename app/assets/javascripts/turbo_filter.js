@@ -287,73 +287,7 @@ function toggleMultiSelect(el) {
 }
 
 function submit_query_form(id) {
-  // selectAllOptions("selected_columns");
   $('#'+id).submit();
-}
-
-function showTab(name, url) {
-  $('div#content .tab-content').hide();
-  $('div.tabs a').removeClass('selected');
-  $('#tab-content-' + name).show();
-  $('#tab-' + name).addClass('selected');
-  //replaces current URL with the "href" attribute of the current link
-  //(only triggered if supported by browser)
-  if ("replaceState" in window.history) {
-    window.history.replaceState(null, document.title, url);
-  }
-  return false;
-}
-
-function moveTabRight(el) {
-  var lis = $(el).parents('div.tabs').first().find('ul').children();
-  var tabsWidth = 0;
-  var i = 0;
-  lis.each(function() {
-    if ($(this).is(':visible')) {
-      tabsWidth += $(this).width() + 6;
-    }
-  });
-  if (tabsWidth < $(el).parents('div.tabs').first().width() - 60) { return; }
-  while (i<lis.length && !lis.eq(i).is(':visible')) { i++; }
-  lis.eq(i).hide();
-}
-
-function moveTabLeft(el) {
-  var lis = $(el).parents('div.tabs').first().find('ul').children();
-  var i = 0;
-  while (i < lis.length && !lis.eq(i).is(':visible')) { i++; }
-  if (i > 0) {
-    lis.eq(i-1).show();
-  }
-}
-
-function displayTabsButtons() {
-  var lis;
-  var tabsWidth = 0;
-  var el;
-  $('div.tabs').each(function() {
-    el = $(this);
-    lis = el.find('ul').children();
-    lis.each(function(){
-      if ($(this).is(':visible')) {
-        tabsWidth += $(this).width() + 6;
-      }
-    });
-    if ((tabsWidth < el.width() - 60) && (lis.first().is(':visible'))) {
-      el.find('div.tabs-buttons').hide();
-    } else {
-      el.find('div.tabs-buttons').show();
-    }
-  });
-}
-
-function setPredecessorFieldsVisibility() {
-  var relationType = $('#relation_relation_type');
-  if (relationType.val() == "precedes" || relationType.val() == "follows") {
-    $('#predecessor_fields').show();
-  } else {
-    $('#predecessor_fields').hide();
-  }
 }
 
 function showModal(id, width) {
@@ -378,52 +312,6 @@ function hideModal(el) {
     modal = $('#ajax-modal');
   }
   modal.dialog("close");
-}
-
-function submitPreview(url, form, target) {
-  $.ajax({
-    url: url,
-    type: 'post',
-    data: $('#'+form).serialize(),
-    success: function(data){
-      $('#'+target).html(data);
-    }
-  });
-}
-
-function initMyPageSortable(list, url) {
-  $('#list-'+list).sortable({
-    connectWith: '.block-receiver',
-    tolerance: 'pointer',
-    update: function(){
-      $.ajax({
-        url: url,
-        type: 'post',
-        data: {'blocks': $.map($('#list-'+list).children(), function(el){return $(el).attr('id');})}
-      });
-    }
-  });
-  $("#list-top, #list-left, #list-right").disableSelection();
-}
-
-var warnLeavingUnsavedMessage;
-function warnLeavingUnsaved(message) {
-  warnLeavingUnsavedMessage = message;
-  $(document).on('submit', 'form', function(){
-    $('textarea').removeData('changed');
-  });
-  $(document).on('change', 'textarea', function(){
-    $(this).data('changed', 'changed');
-  });
-  window.onbeforeunload = function(){
-    var warn = false;
-    $('textarea').blur().each(function(){
-      if ($(this).data('changed')) {
-        warn = true;
-      }
-    });
-    if (warn) {return warnLeavingUnsavedMessage;}
-  };
 }
 
 function setupAjaxIndicator() {
@@ -455,32 +343,7 @@ function addFormObserversForDoubleSubmit() {
   });
 }
 
-function defaultFocus(){
-  if ($('#content :focus').length == 0) {
-    $('#content input[type=text], #content textarea').first().focus();
-  }
-}
-
-function blockEventPropagation(event) {
-  event.stopPropagation();
-  event.preventDefault();
-}
-
-function toggleDisabledOnChange() {
-  var checked = $(this).is(':checked');
-  $($(this).data('disables')).attr('disabled', checked);
-  $($(this).data('enables')).attr('disabled', !checked);
-}
-function toggleDisabledInit() {
-  $('input[data-disables], input[data-enables]').each(toggleDisabledOnChange);
-}
-$(document).ready(function(){
-  $('#content').on('change', 'input[data-disables], input[data-enables]', toggleDisabledOnChange);
-  toggleDisabledInit();
-});
-
-$(document).ready(setupAjaxIndicator);
-$(document).ready(hideOnLoad);
-$(document).ready(addFormObserversForDoubleSubmit);
-$(document).ready(defaultFocus);
+// $(document).ready(setupAjaxIndicator);
+// $(document).ready(hideOnLoad);
+// $(document).ready(addFormObserversForDoubleSubmit);
 
