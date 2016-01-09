@@ -318,7 +318,7 @@ module TurboFilter
         else
           from = from - 1 # second
         end
-        if self.class.default_timezone == :utc
+        if @filters_for_class.default_timezone == :utc
           from = from.utc
         end
         s << ("#{table}.#{field} > '%s'" % [@filters_for_class.connection.quoted_date(from)])
@@ -327,7 +327,7 @@ module TurboFilter
         if to.is_a?(Date)
           to = Time.local(to.year, to.month, to.day).end_of_day
         end
-        if self.class.default_timezone == :utc
+        if @filters_for_class.default_timezone == :utc
           to = to.utc
         end
         s << ("#{table}.#{field} <= '%s'" % [@filters_for_class.connection.quoted_date(to)])

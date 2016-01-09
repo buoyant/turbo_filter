@@ -113,7 +113,7 @@ function buildFilterRow(field, operator, values) {
   if (!filterOptions) return;
   var operators = operatorByType[filterOptions['type']];
   var filterValues = filterOptions['values'];
-  var datepickerOptions = {showButtonPanel: true, changeMonth: true, changeYear: true};
+  var datepickerOptions = {dateFormat: 'yy-mm-dd', showButtonPanel: true, changeMonth: true, changeYear: true};
   var i, select;
 
   var tr = $('<tr class="filter">').attr('id', 'tr_'+fieldId).html(
