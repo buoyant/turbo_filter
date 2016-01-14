@@ -1,18 +1,18 @@
 <script type="text/javascript">
 var operatorLabels = <%= raw_json TurboFilter::TurboFilterQuery.operators_labels %>;
 var operatorByType = <%= raw_json TurboFilter::TurboFilterQuery.operators_by_filter_type %>;
-var availableFilters = <%= raw_json query.available_filters_as_json %>;
+var availableFilters = <%= raw_json turbo_filter_query.available_filters_as_json %>;
 var labelDayPlural = <%= raw_json t(:label_day_plural) %>;
 $(document).on('ready page:load', function () {
   initFilters();
-  <% query.filters.each do |field, options| %>
-  addFilter("<%= field %>", <%= raw_json query.operator_for(field) %>, <%= raw_json query.values_for(field) %>);
+  <% turbo_filter_query.filters.each do |field, options| %>
+  addFilter("<%= field %>", <%= raw_json turbo_filter_query.operator_for(field) %>, <%= raw_json turbo_filter_query.values_for(field) %>);
   <% end %>
 });
 </script>
 <h2>Turbo Filters</h2>
-<%= form_tag({ :controller => @query.instance_values["filters_for_class"].to_s.pluralize.downcase, :action => 'index' },
-            :method => :get, :id => 'query_form') do %>
+<%= form_tag({ :controller => turbo_filter_query.instance_values["filters_for_class"].to_s.pluralize.downcase, :action => 'index' },
+            :method => :get, :id => 'turbo_filter_query_form') do %>
 <table style="width:100%">
   <tr>
     <td>
@@ -20,12 +20,12 @@ $(document).on('ready page:load', function () {
     </td>
     <td class="add-filter">
       <%= label_tag('add_filter_select', t(:label_filter_add)) %>
-      <%= select_tag 'add_filter_select', filters_options_for_select(query), :name => nil %>
+      <%= select_tag 'add_filter_select', filters_options_for_select(turbo_filter_query), :name => nil %>
     </td>
   </tr>
 </table>
 <%= hidden_field_tag 'f[]', '' %>
-<%= link_to_function t(:apply), 'submit_query_form("query_form")', :class => 'btn btn-primary' %>
+<%= link_to_function t(:apply), 'submit_turbo_filter_query_form("turbo_filter_query_form")', :class => 'btn btn-primary' %>
 <%= link_to t(:clear), { :set_filter => 1 }, "data-no-turbolink" => true, :class => 'btn'  %>
 <% end -%>
 <hr>

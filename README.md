@@ -1,6 +1,6 @@
 # TurboFilter
 
-TODO: Write a gem description
+Filters your ActiveRecord table records.
 
 ## Installation
 
@@ -18,7 +18,38 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+  Add turbo_filter to application.js
+
+    //= require turbo_filter
+
+  In Controller:
+
+    class ArticlesController < ApplicationController
+    ...
+      def index
+        retrieve_turbo_filter_query(Article)
+        @articles = Article.where(@turbo_filter_query.statement).paginate(page: params[:page], per_page: 100)
+      end
+    ...
+    end
+
+  In Models: Add `to_s` method like below to `Article -> belongs_to` assocation classes.
+
+    class User < ActiveRecord::Base
+    ...
+      def to_s
+        name
+      end
+    ...
+    end
+
+  In Views: Add `turbo_filters` helper method to `app/views/articles/index.html.erb` view filters.
+
+    <%= turbo_filters %>
+
+  UI Compatibility: boostrap compatible.
+  Requires jQueryDatePicker, Turbo links enabled.
+
 
 ## Contributing
 

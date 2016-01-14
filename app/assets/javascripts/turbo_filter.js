@@ -85,7 +85,7 @@ function initFilters() {
     toggleMultiSelect($(this).siblings('select'));
   });
   $('#filters-table').on('keypress', 'input[type=text]', function(e) {
-    if (e.keyCode == 13) submit_query_form("query_form");
+    if (e.keyCode == 13) submit_turbo_filter_query_form("turbo_filter_query_form");
   });
 }
 
@@ -286,7 +286,7 @@ function toggleMultiSelect(el) {
   }
 }
 
-function submit_query_form(id) {
+function submit_turbo_filter_query_form(id) {
   $('#'+id).submit();
 }
 

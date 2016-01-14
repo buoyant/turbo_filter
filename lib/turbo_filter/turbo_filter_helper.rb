@@ -2,7 +2,7 @@ module TurboFilter
   module TurboFilterHelper
 
     def turbo_filters
-      render :partial => 'turbo_filters/filters', :layout => false, :locals => {:query => @query}
+      render :partial => 'turbo_filters/filters', :layout => false, :locals => {:turbo_filter_query => @turbo_filter_query}
     end
 
     def filters_options_for_select(query)
