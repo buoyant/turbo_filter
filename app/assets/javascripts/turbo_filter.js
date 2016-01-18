@@ -286,8 +286,21 @@ function toggleMultiSelect(el) {
   }
 }
 
+function validate_turbo_filters(id) {
+  var arr = 0;
+  $(".value:visible").each(function(){
+    if(!$(this).val().trim()){
+      $(this).css({"border-color": "RED"});
+      $(this).attr('placeholder', "can't be empty.");
+      arr += 1;
+    }
+  });
+  return arr;
+}
+
 function submit_turbo_filter_query_form(id) {
-  $('#'+id).submit();
+  if(validate_turbo_filters(id) === 0)
+    $('#'+id).submit();
 }
 
 function showModal(id, width) {
