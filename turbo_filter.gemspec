@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["isandeepthota@gmail.com"]
   spec.description   = %q{Filtering ActiveRecord Results}
   spec.summary       = %q{Filter records}
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/buoyant/turbo_filter"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
