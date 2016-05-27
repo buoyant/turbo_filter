@@ -69,8 +69,9 @@ module TurboFilter
           when :float
             add_available_filter col.name, :type => :float
           when :integer
-            if association_foreign_keys.include?(col.name)
-              association_class = associations.select { |a| a.foreign_key == col.name }.first.class_name.constantize
+            association_class_name = associations.select { |a| a.foreign_key == col.name }.first.try(:class_name)
+            if association_foreign_keys.include?(col.name) && defined?(association_class_name.constantize) == 'constant'
+              association_class = association_class_name.constantize
               association_values = association_class.all.collect{|s| [s.to_s, s.id.to_s] }
               add_available_filter col.name, :type => :list, :values => association_values
             else
